@@ -51,8 +51,9 @@ echo ""
 echo "exit" >> $domain$stamp.resource
 echo ""
 
-recon-ng -r $path/$domain$stamp.resource &> /dev/null
+#recon-ng -r $path/$domain$stamp.resource &> /dev/null
 
+recon-ng -r $path/$domain$stamp.resource 
 #End of recon-ng, see workplace.timestamp for details
 
 if [ "${hostname[0]}" == "https:" ]
@@ -70,6 +71,8 @@ then
 	nmap --script vuln -sV $domain -oA nmap/vuln_web_ports  -p $port
 
 fi
+
+goohak $domain
 
 echo "Running full tcp nmap:"
 
@@ -89,4 +92,5 @@ nikto -Display 1234EP -o nikto.html -Format htm -Tuning 123bde -host $1 -C all
 
 gobuster dir -u $1 -w /root/Documents/Attacks/GoBusterWordlists/dirb/mini.txt -o gobuster_all.result -t $threads --wildcard
 
-'
+xsstrike -u $1 --headers  --crawl -l 10 --proxy
+
