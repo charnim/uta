@@ -9,6 +9,21 @@ users="/root/Documents/Attacks/Bruteforce/commonUserShort.txt"
 passwords="/root/Documents/Attacks/Bruteforce/rockyou-50.txt"
 
 orange='\033[93m' 
+green='\033[92m'
+
+# This block is to output the DIR var which is the source folder where the script resides
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+
+# This is the output
+
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+
 
 while getopts t:r:p:hfl:u: option
 do
@@ -19,30 +34,57 @@ do
 		p) port=${OPTARG};;
 		l) threads=${OPTARG};;
 		f) full="true";;
-		u) url=${OPTARG};;
+		u) url=${OPTARG}
+		
+		IFS='//' read -ra hostname <<< "$url" # $url = https://www.site.com
+		
+		domain="${hostname[2]}" # aka www.site.com
+		
+		;;
+		
 		h)  echo -e "$orange\nusage: optimus [-t host/ip][-r protocol][-p port][-l treads], -h for help
 Options -f - full scan
 
 Currently supported protocols: 
+
 ftp
 mysql
 rtsp
 ssh
-Http Example: use optimus -r http -p port -u
+http
+recon
+host
+
+Recon Example:
+
+	$green Optimus -r recon [-u url] [-f] $orange
+
+Http Example: 
+
+	$green Optimus -r http [-p port] [-u url] $orange
+
 use 'host' protocol to specify full vulnscan\n
 
 The following protocols arent complete:
 
 rdp\n
+
+$DIR
+
 " && exit
 
 	esac
 done
 
+#var declarations
+
+IFS='//' read -ra hostname <<< "$url" # $url = https://www.site.com
+
+domain="${hostname[2]}" # aka www.site.com
+
 # nmap stuff 
 
 mkdir optimus_nmap exploits sqlrequests
-
 
 ##########################################################################################################################################################
 
@@ -58,12 +100,6 @@ then
 elif [ "$protocol" == "http" ] # http is url based not host based so nmap altered
 
 then
-
-	#var declarations
-	
-	IFS='//' read -ra hostname <<< "$url" # $url = https://www.site.com
-
-	domain="${hostname[2]}" # aka www.site.com
 
 	echo "nmap $domain -p $port -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port # -A as vuln"
 
@@ -192,19 +228,22 @@ then
 
 	wafw00f $url
 
-	robocop -u $url # Runs over disallow entries of the robots.txt of the url(if exists) and opens non 40X/50X urls.
+	python3 $DIR/modules/http/robocop.py -u $url # Runs over disallow entries of the robots.txt of the url(if exists) and opens non 40X/50X urls.
 
 	cmsmap -s $url
 
-	corsed -u $url # try get corsed output
+	python3 $DIR/modules/http/corsed.py -u $url # try get corsed output
 
 	nikto -Display 1234EP -o nikto.html -Format htm -Tuning 123bde -host $url -C all
 
 	bfac -u $url
 
+	paramspider -d $domain
+
 	if [ "$full" == "true" ] # This is for dirb attacking
 	
 	then
+		
 		read -p 'Threads number for gobuster?: ' threads
 		
 		gobuster dir -u $url -w /root/Documents/Attacks/GoBusterWordlists/dirb/mini.txt -o gobuster_all.result_$d -t $threads --wildcard
@@ -213,3 +252,25 @@ then
 
 	fi
 fi
+
+##########################################################################################################################################################
+
+# RECON
+
+if [ "$protocol" == "recon" ]
+
+then
+	
+	if [ "$full" == "true" ] # This is for dirb attacking
+	
+	then
+	
+		$DIR/modules/recon/stalker.sh -d $domain -f
+	else
+
+		echo "$DIR/modules/recon/stalker.sh -d $domain"
+	
+		$DIR/modules/recon/stalker.sh -d $domain
+	
+	fi
+fi		
