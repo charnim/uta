@@ -10,7 +10,7 @@ passwords="/root/Documents/Attacks/Bruteforce/rockyou-50.txt"
 
 orange='\033[93m' 
 
-while getopts t:r:p:hfl: option
+while getopts t:r:p:hfl:u: option
 do
 	case "${option}"
 		in
@@ -19,6 +19,7 @@ do
 		p) port=${OPTARG};;
 		l) threads=${OPTARG};;
 		f) full="true";;
+		u) url=${OPTARG};;
 		h)  echo -e "$orange\nusage: optimus [-t host/ip][-r protocol][-p port][-l treads], -h for help
 Options -f - full scan
 
@@ -27,6 +28,7 @@ ftp
 mysql
 rtsp
 ssh
+Http Example: use optimus -r http -p port -u
 use 'host' protocol to specify full vulnscan\n
 
 The following protocols arent complete:
@@ -39,7 +41,8 @@ done
 
 # nmap stuff 
 
-mkdir optimus_nmap
+mkdir optimus_nmap exploits sqlrequests
+
 
 ##########################################################################################################################################################
 
@@ -51,6 +54,21 @@ then
 	nmap $host -p- -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port 
 
 	searchsploit --nmap optimus_nmap/optimus_nmap_$protocol_$port.xml -v 
+
+elif [ "$protocol" == "http" ] # http is url based not host based so nmap altered
+
+then
+
+	#var declarations
+	
+	IFS='//' read -ra hostname <<< "$url" # $url = https://www.site.com
+
+	domain="${hostname[2]}" # aka www.site.com
+
+	echo "nmap $domain -p $port -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port # -A as vuln"
+
+	nmap $domain -p $port -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port # -A as vuln
+
 else
 	
 	nmap $host -p $port -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port 
@@ -149,8 +167,49 @@ then
 
 	if [ "$full" == "true" ]
 	then
+	
 #crowbar bruteforce
 
 		crowbar -b rdp -s  $host -u administrator -C $passwords
+	fi
+fi
+
+##########################################################################################################################################################
+
+# HTTP
+
+if [ "$protocol" == "http" ]
+then
+
+	echo "$orange Starting http/https analysis:"
+
+	if [ "${hostname[0]}" == "https:" ]
+	then
+		sslscan $url
+
+		yawast ssl $url --tdessessioncount 
+	fi
+
+	wafw00f $url
+
+	robocop -u $url # Runs over disallow entries of the robots.txt of the url(if exists) and opens non 40X/50X urls.
+
+	cmsmap -s $url
+
+	corsed -u $url # try get corsed output
+
+	nikto -Display 1234EP -o nikto.html -Format htm -Tuning 123bde -host $url -C all
+
+	bfac -u $url
+
+	if [ "$full" == "true" ] # This is for dirb attacking
+	
+	then
+		read -p 'Threads number for gobuster?: ' threads
+		
+		gobuster dir -u $url -w /root/Documents/Attacks/GoBusterWordlists/dirb/mini.txt -o gobuster_all.result_$d -t $threads --wildcard
+
+		for i in $(cat gobuster_* | awk -F" " '{print $1}' | sort -u); do firefox $url$i; done
+
 	fi
 fi
