@@ -267,8 +267,6 @@ then
 	
 		$DIR/modules/recon/stalker.sh -d $domain -f
 	else
-
-		echo "$DIR/modules/recon/stalker.sh -d $domain"
 	
 		$DIR/modules/recon/stalker.sh -d $domain
 	
