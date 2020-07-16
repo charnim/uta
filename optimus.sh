@@ -76,12 +76,6 @@ $DIR
 	esac
 done
 
-#var declarations
-
-IFS='//' read -ra hostname <<< "$url" # $url = https://www.site.com
-
-domain="${hostname[2]}" # aka www.site.com
-
 # nmap stuff 
 
 mkdir optimus_nmap exploits sqlrequests
@@ -233,6 +227,8 @@ then
 	cmsmap -s $url
 
 	python3 $DIR/modules/http/corsed.py -u $url # try get corsed output
+	
+	python3 $DIR/modules/http/.py -u $url # try get corsed output
 
 	nikto -Display 1234EP -o nikto.html -Format htm -Tuning 123bde -host $url -C all
 
