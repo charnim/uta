@@ -63,8 +63,7 @@ if args.url:
                 exit(0)
             final = statuser(unallowed_urls=extractor(r.text), url=args.url)
             print('The final list of accessible links:\n', *final, sep='\n')
-            answer = input('Would you like to open the links found? Y/N: ')
-            [webbrowser.open(url.split()[1]) for url in final] if answer.lower() == 'y' else exit(1)
+            [webbrowser.open(url.split()[1]) for url in final]
         else:
             print("Please specify http:// or https:// in the url!", end='')
     except KeyboardInterrupt:

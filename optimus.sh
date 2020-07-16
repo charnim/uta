@@ -222,13 +222,21 @@ then
 
 	wafw00f $url
 
+	sleep 1
+
 	python3 $DIR/modules/http/robocop.py -u $url # Runs over disallow entries of the robots.txt of the url(if exists) and opens non 40X/50X urls.
+
+	sleep 1
 
 	cmsmap -s $url
 
 	python3 $DIR/modules/http/corsed.py -u $url # try get corsed output
+
+	sleep 1
 	
-	python3 $DIR/modules/http/.py -u $url # try get corsed output
+	python3 $DIR/modules/http/clickjacking.py -u $url # try get  output
+
+	sleep 1
 
 	nikto -Display 1234EP -o nikto.html -Format htm -Tuning 123bde -host $url -C all
 

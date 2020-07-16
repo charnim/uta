@@ -37,4 +37,4 @@ if args.url:  # This is the cors request
     with open('cors.html', 'w') as cors:  # write the cors
         cors.write(template)
 
-    os.system("firefox cors.html")  # Open CORS file
+    os.system("firefox cors.html &")  # Open CORS file

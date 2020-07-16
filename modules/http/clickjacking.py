@@ -18,10 +18,10 @@ if args.url:  # This is the cors request
     
     """
 
-    with open('jacked.html', 'w') as jack:  # write the cors
+    with open('jacked.html', 'w') as jack:  # write the jacking
         jack.write(template)
 
-    os.system("firefox jacked.html")  # Open CORS file
+    os.system("firefox jacked.html &")  # Open jack file
 
 
 
