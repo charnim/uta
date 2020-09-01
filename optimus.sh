@@ -87,10 +87,14 @@ mkdir optimus_nmap exploits sqlrequests
 if [ "$protocol" == "host" ]
 then
 
-	nmap $host -p- -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port 
+	nmap $host  -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port --open --reason
 
 	searchsploit --nmap optimus_nmap/optimus_nmap_$protocol_$port.xml -v 
 
+	nmap $host -p- -sV -A -Pn -oA optimus_nmap/optimus_nmap_$protocol_$port --open --reason
+
+	searchsploit --nmap optimus_nmap/optimus_nmap_$protocol_$port.xml -v 
+	
 elif [ "$protocol" == "http" ] # http is url based not host based so nmap altered
 
 then
@@ -217,7 +221,7 @@ then
 	then
 		sslscan $url
 
-		yawast ssl $url --tdessessioncount 
+#		yawast ssl $url --tdessessioncount 
 	fi
 
 	wafw00f $url
@@ -228,7 +232,7 @@ then
 
 	sleep 1
 
-	cmsmap -s $url
+
 
 	python3 $DIR/modules/http/corsed.py -u $url # try get corsed output
 
@@ -243,6 +247,8 @@ then
 	bfac -u $url
 
 	paramspider -d $domain
+
+	cmsmap -s $url
 
 	if [ "$full" == "true" ] # This is for dirb attacking
 	
